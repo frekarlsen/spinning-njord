@@ -351,7 +351,7 @@ function SessionModal({ session, monday, onSave, onClose }) {
           })}
         </div>
         <div className="space-y-3">
-          <Input label="Klokkeslett" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+          <Input label="Klokkeslett (24t)" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
           <Input label="Beskrivelse" type="text" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="Spinning, Intervall, Rolig..." />
         </div>
         <div className="flex gap-2 mt-5">
@@ -397,27 +397,21 @@ function LoginModal({ admins, onLogin, onClose }) {
 
 // ── Admin Panel ───────────────────────────────────────────────
 function AdminPanel({ data, onSave, onLogout }) {
-  const [tab, setTab] = useState("admins");
-  const [newAdmin, setNewAdmin] = useState({ username: "", password: "" });
+  const admin = data.admins[0];
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [webhook, setWebhook] = useState(data.teamsWebhook || "");
   const [maxSpots, setMaxSpots] = useState(data.maxSpots || MAX_SPOTS);
   const [saved, setSaved] = useState("");
 
   const flash = (msg) => { setSaved(msg); setTimeout(() => setSaved(""), 2000); };
 
-  const addAdmin = () => {
-    if (!newAdmin.username || !newAdmin.password) return;
-    if (data.admins.some((a) => a.username.toLowerCase() === newAdmin.username.toLowerCase())) return;
-    onSave({ ...data, admins: [...data.admins, { ...newAdmin }] });
-    setNewAdmin({ username: "", password: "" });
-    flash("Admin lagt til");
-  };
-
-  const removeAdmin = (i) => {
-    if (data.admins.length <= 1) return;
-    const a = [...data.admins]; a.splice(i, 1);
-    onSave({ ...data, admins: a });
-    flash("Admin fjernet");
+  const changePassword = () => {
+    if (!newPassword || newPassword !== confirmPassword) return;
+    onSave({ ...data, admins: [{ ...admin, password: newPassword }] });
+    setNewPassword("");
+    setConfirmPassword("");
+    flash("Passord endret");
   };
 
   const saveSettings = () => {
@@ -433,41 +427,23 @@ function AdminPanel({ data, onSave, onLogout }) {
       </div>
       {saved && <div className="mb-4 bg-green-900 bg-opacity-40 text-green-300 text-sm px-4 py-2 rounded-xl">✓ {saved}</div>}
 
-      <div className="flex gap-1 bg-gray-800 rounded-xl p-1 mb-4">
-        {[{ id: "admins", label: "Admins" }, { id: "settings", label: "Innstillinger" }].map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex-1 py-2 text-sm rounded-lg transition-colors ${tab === t.id ? "bg-gray-600 text-white font-medium" : "text-gray-400 hover:text-gray-200"}`}
-          >{t.label}</button>
-        ))}
-      </div>
-
-      {tab === "admins" && (
+      <div className="space-y-5">
         <div className="space-y-3">
-          {data.admins.map((a, i) => (
-            <div key={i} className="flex items-center justify-between bg-gray-800 rounded-xl px-4 py-3">
-              <span className="text-gray-200">{a.username}</span>
-              <button onClick={() => removeAdmin(i)} disabled={data.admins.length <= 1}
-                className={data.admins.length <= 1 ? "text-gray-700 cursor-not-allowed" : "text-gray-600 hover:text-red-400 transition-colors"}>✕</button>
-            </div>
-          ))}
-          <div className="space-y-2 pt-2 border-t border-gray-700">
-            <Input placeholder="Brukernavn" value={newAdmin.username} onChange={(e) => setNewAdmin((p) => ({ ...p, username: e.target.value }))} />
-            <Input placeholder="Passord" type="password" value={newAdmin.password} onChange={(e) => setNewAdmin((p) => ({ ...p, password: e.target.value }))} />
-            <Button onClick={addAdmin} disabled={!newAdmin.username || !newAdmin.password}>Legg til admin</Button>
-          </div>
+          <p className="text-sm text-gray-400 font-medium">Innlogget som <span className="text-white">{admin.username}</span></p>
+          <Input label="Nytt passord" type="password" placeholder="Nytt passord" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+          <Input label="Bekreft passord" type="password" placeholder="Gjenta passord" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+          <Button onClick={changePassword} disabled={!newPassword || newPassword !== confirmPassword}>Endre passord</Button>
         </div>
-      )}
 
-      {tab === "settings" && (
-        <div className="space-y-4">
+        <div className="border-t border-gray-700 pt-4 space-y-3">
           <Input label="Maks plasser per økt" type="number" value={maxSpots} onChange={(e) => setMaxSpots(e.target.value)} />
           <div>
             <Input label="Teams Webhook URL" type="url" placeholder="https://outlook.office.com/webhook/..." value={webhook} onChange={(e) => setWebhook(e.target.value)} />
             <p className="text-xs text-gray-500 mt-1">Varsler Teams-kanalen ved nye økter, avlysninger og endringer.</p>
           </div>
-          <Button onClick={saveSettings}>Lagre</Button>
+          <Button onClick={saveSettings}>Lagre innstillinger</Button>
         </div>
-      )}
+      </div>
     </div>
   );
 }
