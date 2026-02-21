@@ -33,6 +33,16 @@ function fmtFull(d) {
   return `${days[date.getDay()]} ${date.getDate()}.${(date.getMonth() + 1).toString().padStart(2, "0")}`;
 }
 
+function fmtShort(d) {
+  const date = new Date(d);
+  return `${date.getDate()}.${(date.getMonth() + 1).toString().padStart(2, "0")}`;
+}
+
+function fmt24h(time) {
+  const [h, m] = time.split(":").map(Number);
+  return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
+}
+
 function isSameWeek(dateStr, monday) {
   const d = new Date(dateStr);
   const sun = new Date(monday);
@@ -184,7 +194,7 @@ function SessionCard({ session, userName, onSignup, onLeave, maxSpots, isAdmin, 
       <div className="bg-gray-900 px-4 py-3 flex items-center justify-between">
         <div>
           <span className="font-semibold text-white">{fmtFull(session.date)}</span>
-          <span className="text-gray-400 ml-2 text-sm">kl. {session.time}</span>
+          <span className="text-gray-400 ml-2 text-sm">kl. {fmt24h(session.time)}</span>
           {session.label && session.label !== "Spinning" && (
             <span className="text-gray-500 ml-2 text-sm">· {session.label}</span>
           )}
@@ -474,6 +484,11 @@ export default function SpinningNjord() {
   const [showNewSession, setShowNewSession] = useState(false);
 
   const monday = useMemo(() => getMondayOfWeek(weekOffset), [weekOffset]);
+  const sunday = useMemo(() => {
+    const s = new Date(monday);
+    s.setDate(s.getDate() + 6);
+    return s;
+  }, [monday]);
   const weekNum = getWeekNumber(monday);
   const isAdmin = !!adminUser;
 
@@ -591,9 +606,14 @@ export default function SpinningNjord() {
 
         <div className="flex items-center justify-between mb-5 bg-gray-900 rounded-xl p-3">
           <button onClick={() => setWeekOffset((o) => o - 1)} className="w-10 h-10 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors">←</button>
-          <div className="text-center">
-            <div className="font-semibold text-white">Uke {weekNum}</div>
+          <div className="text-center flex flex-col items-center gap-1">
+            <div className="font-semibold text-white">Uke {weekNum} · {fmtShort(monday)} – {fmtShort(sunday)}</div>
             <div className="text-xs text-gray-400">{monday.getFullYear()}</div>
+            {weekOffset !== 0 && (
+              <button onClick={() => setWeekOffset(0)} className="text-xs text-blue-400 hover:text-blue-300 transition-colors mt-0.5">
+                I dag
+              </button>
+            )}
           </div>
           <button onClick={() => setWeekOffset((o) => o + 1)} className="w-10 h-10 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors">→</button>
         </div>
