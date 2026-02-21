@@ -28,13 +28,13 @@ function getMondayOfWeek(weekOffset = 0) {
 }
 
 function fmtFull(d) {
-  const date = new Date(d);
+  const date = typeof d === "string" ? parseLocalDate(d) : new Date(d);
   const days = ["Søndag", "Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag", "Lørdag"];
   return `${days[date.getDay()]} ${date.getDate()}.${(date.getMonth() + 1).toString().padStart(2, "0")}`;
 }
 
 function fmtShort(d) {
-  const date = new Date(d);
+  const date = typeof d === "string" ? parseLocalDate(d) : new Date(d);
   return `${date.getDate()}.${(date.getMonth() + 1).toString().padStart(2, "0")}`;
 }
 
@@ -43,8 +43,22 @@ function fmt24h(time) {
   return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 }
 
+// Parser "YYYY-MM-DD" som lokal tid (ikke UTC) for å unngå dag-skift i norsk tidssone
+function parseLocalDate(dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+// Lager "YYYY-MM-DD" fra et lokalt Date-objekt (ikke toISOString som gir UTC)
+function toLocalDateStr(date) {
+  const y = date.getFullYear();
+  const m = (date.getMonth() + 1).toString().padStart(2, "0");
+  const d = date.getDate().toString().padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 function isSameWeek(dateStr, monday) {
-  const d = new Date(dateStr);
+  const d = parseLocalDate(dateStr);
   const sun = new Date(monday);
   sun.setDate(sun.getDate() + 6);
   sun.setHours(23, 59, 59, 999);
@@ -52,7 +66,7 @@ function isSameWeek(dateStr, monday) {
 }
 
 function isPast(dateStr, time) {
-  const d = new Date(dateStr);
+  const d = parseLocalDate(dateStr);
   const [h, m] = time.split(":").map(Number);
   d.setHours(h + 1, m, 0, 0);
   return new Date() > d;
@@ -315,7 +329,7 @@ function SessionModal({ session, monday, onSave, onClose }) {
       const diff = Math.ceil((today - monday) / 86400000);
       d.setDate(d.getDate() + Math.min(diff, 6));
     }
-    return d.toISOString().split("T")[0];
+    return toLocalDateStr(d);
   };
 
   const [date, setDate] = useState(session?.date || getDefaultDate());
@@ -337,7 +351,7 @@ function SessionModal({ session, monday, onSave, onClose }) {
         <label className="block text-sm text-gray-400 mb-2">Dag</label>
         <div className="grid grid-cols-7 gap-1 mb-4">
           {weekDates.map((wd, i) => {
-            const dateStr = wd.toISOString().split("T")[0];
+            const dateStr = toLocalDateStr(wd);
             const isSelected = date === dateStr;
             const dayPast = wd < new Date(new Date().setHours(0, 0, 0, 0));
             return (
