@@ -342,16 +342,18 @@ function SessionCard({ session, userName, onSignup, onLeave, maxSpots, isAdmin, 
           ) : (
             waitlist.length > 0 && <Badge color="yellow">{waitlist.length} venter</Badge>
           )}
-          {isAdmin && !past && (
+          {isAdmin && (
             <div className="flex gap-1 ml-1">
-              {!cancelled && (
+              {!past && !cancelled && (
                 <button onClick={() => onEdit(session)} className="text-gray-500 hover:text-blue-400 text-xs px-1.5 py-1 rounded hover:bg-gray-800 transition-colors" title="Rediger">✎</button>
               )}
               {cancelled ? (
                 <>
-                  <button onClick={() => onRestore(session.id)} className="text-gray-500 hover:text-green-400 text-xs px-1.5 py-1 rounded hover:bg-gray-800 transition-colors" title="Gjenopprett">↩</button>
+                  {!past && <button onClick={() => onRestore(session.id)} className="text-gray-500 hover:text-green-400 text-xs px-1.5 py-1 rounded hover:bg-gray-800 transition-colors" title="Gjenopprett">↩</button>}
                   <button onClick={() => onDelete(session.id)} className="text-gray-500 hover:text-red-400 text-xs px-1.5 py-1 rounded hover:bg-gray-800 transition-colors" title="Slett permanent">🗑</button>
                 </>
+              ) : past ? (
+                <button onClick={() => onDelete(session.id)} className="text-gray-500 hover:text-red-400 text-xs px-1.5 py-1 rounded hover:bg-gray-800 transition-colors" title="Slett">🗑</button>
               ) : (
                 <button onClick={() => onCancel(session.id)} className="text-gray-500 hover:text-red-400 text-xs px-1.5 py-1 rounded hover:bg-gray-800 transition-colors" title="Avlys">✕</button>
               )}
@@ -730,7 +732,7 @@ export default function SpinningNjord() {
           )}
         </div>
 
-        <div className="text-center text-gray-700 text-xs mt-8">Vel møtt! 💪</div>
+        <div className="text-center text-gray-700 text-xs mt-8 space-y-1"><p>Vel møtt! 💪</p><p>Laget av Fredrik Karlsen</p></div>
       </div>
 
       {showLogin && (
