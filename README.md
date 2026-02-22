@@ -2,6 +2,12 @@
 
 Påmeldingssystem for spinning-økter på Njord A-plattformen.
 
+## Tech stack
+
+- **Frontend:** React + Tailwind CSS (Vite)
+- **Backend:** Node.js + Express + SQLite
+- **Hosting:** Docker på Unraid, tilgjengelig via Cloudflare Tunnel
+
 ## Funksjoner
 
 - Påmelding/avmelding med navnefelt
