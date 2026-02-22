@@ -11,10 +11,11 @@ Påmeldingssystem for spinning-økter på Njord A-plattformen.
 ## Funksjoner
 
 - Påmelding/avmelding med navnefelt
+- Confetti-effekt ved påmelding 🎉
 - Venteliste med automatisk opprykk
 - Admin-panel (opprett, rediger, avlys økter)
-- Teams webhook-varsling
-- Dual-mode tema: Profesjonell modus + Njord Modus 🚴
+- Teams webhook + ntfy.sh push-varsling
+- Njord A Cycling Team-tema med animerte syklister
 - Mobilvennlig design
 
 ## Kom i gang
@@ -45,10 +46,17 @@ curl -H "x-api-key: DIN_API_NØKKEL" \
      -o backup-$(date +%Y%m%d).json
 ```
 
+## Varsler
+
+Støtter to varslingskanaler (konfigureres i admin-panelet):
+
+- **Teams Webhook** — meldinger til Teams-kanal
+- **ntfy.sh** — push-varsler til mobil. Last ned [ntfy-appen](https://ntfy.sh) og abonnér på ditt valgte topic.
+
 ## Standard admin-innlogging
 
-- Brukernavn: `admin`
-- Passord: `njord2025`
+- Brukernavn: `instruktør`
+- Passord: `njord2026`
 
 > Bytt passord via admin-panelet etter første innlogging.
 
