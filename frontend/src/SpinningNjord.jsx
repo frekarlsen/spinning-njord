@@ -21,7 +21,14 @@ async function apiPut(data){
 }
 function useStorage(){
   const[data,setData]=useState(null);
-  useEffect(()=>{(async()=>{const d=await apiGet();setData(d||defaultState())})()},[]);
+  useEffect(()=>{(async()=>{
+    const d=await apiGet();
+    if(!d){setData(defaultState());return;}
+    const def=defaultState();
+    // Merge: sikrer at admins alltid finnes, og fallback-felter fra defaultState
+    const merged={...def,...d,admins:(d.admins&&d.admins.length>0)?d.admins:def.admins};
+    setData(merged);
+  })()},[]);
   const save=useCallback(async nd=>{setData(nd);await apiPut(nd)},[]);
   return[data,save];
 }
