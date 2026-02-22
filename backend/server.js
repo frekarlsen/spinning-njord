@@ -14,7 +14,6 @@ if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const db = new Database(path.join(DATA_DIR, "spinning.db"));
 
-// Én tabell med nøkkel/verdi – enkel og utvidbar
 db.exec(`
   CREATE TABLE IF NOT EXISTS store (
     key   TEXT PRIMARY KEY,
@@ -27,7 +26,6 @@ db.exec(`
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 
-// API-nøkkel autentisering
 function requireApiKey(req, res, next) {
   const key = req.headers["x-api-key"] || req.query.apiKey;
   if (key !== API_KEY) {
@@ -38,12 +36,10 @@ function requireApiKey(req, res, next) {
 
 // ── Routes ───────────────────────────────────────────────────
 
-// Helsesjekk (ingen autentisering – for Docker healthcheck)
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// Hent app-data
 app.get("/api/data", requireApiKey, (req, res) => {
   try {
     const row = db.prepare("SELECT value FROM store WHERE key = 'appdata'").get();
@@ -55,7 +51,6 @@ app.get("/api/data", requireApiKey, (req, res) => {
   }
 });
 
-// Lagre app-data
 app.put("/api/data", requireApiKey, (req, res) => {
   try {
     const value = JSON.stringify(req.body);
@@ -71,7 +66,6 @@ app.put("/api/data", requireApiKey, (req, res) => {
   }
 });
 
-// Enkel backup-endpoint – returner rådata
 app.get("/api/backup", requireApiKey, (req, res) => {
   try {
     const row = db.prepare("SELECT value, updated_at FROM store WHERE key = 'appdata'").get();
@@ -84,7 +78,6 @@ app.get("/api/backup", requireApiKey, (req, res) => {
   }
 });
 
-// ── Start ────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`🚴 Spinning Njord API kjører på port ${PORT}`);
   console.log(`   Data lagres i: ${path.resolve(DATA_DIR)}`);

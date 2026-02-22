@@ -1,44 +1,41 @@
 # 🚴 Spinning Njord A
 
-Påmeldingssystem for spinning på Njord A — med venteliste og Teams-varsling.
+Påmeldingssystem for spinning-økter på Njord A-plattformen.
 
-## Deploy på Unraid
+## Tech stack
+
+- **Frontend:** React + Tailwind CSS (Vite)
+- **Backend:** Node.js + Express + SQLite
+- **Hosting:** Docker på Unraid, tilgjengelig via Cloudflare Tunnel
+
+## Funksjoner
+
+- Påmelding/avmelding med navnefelt
+- Venteliste med automatisk opprykk
+- Admin-panel (opprett, rediger, avlys økter)
+- Teams webhook-varsling
+- Dual-mode tema: Profesjonell modus + Njord Modus 🚴
+- Mobilvennlig design
+
+## Kom i gang
 
 ```bash
-cd /mnt/user/appdata
-git clone https://github.com/DITTBRUKERNAVN/spinning-njord.git
+git clone https://github.com/frekarlsen/spinning-njord.git
 cd spinning-njord
 cp .env.example .env
+# Rediger .env med din egen API_KEY
 docker compose up -d --build
 ```
 
-Appen er tilgjengelig på `http://[unraid-ip]:3456`
+Appen kjører på `http://din-ip:3456`
 
 ## Oppdatering
 
 ```bash
-cd /mnt/user/appdata/spinning-njord
+cd /path/to/spinning-njord
 git pull
 docker compose up -d --build
 ```
-
-## Cloudflare Tunnel
-
-Legg til public hostname i Cloudflare Zero Trust:
-
-- **Subdomain:** spinning (eller kva du vil)
-- **Domain:** dittdomene.no
-- **Service:** http://spinning-web:80
-
-## API-nøkkel
-
-Rediger `.env` og sett ein sterk nøkkel:
-
-```
-API_KEY=din-nøkkel-her
-```
-
-> Nøkkelen beskyttar kommunikasjonen mellom frontend og backend.
 
 ## Backup
 
@@ -54,3 +51,7 @@ curl -H "x-api-key: DIN_API_NØKKEL" \
 - Passord: `njord2025`
 
 > Bytt passord via admin-panelet etter første innlogging.
+
+---
+
+Laget av Fredrik Karlsen

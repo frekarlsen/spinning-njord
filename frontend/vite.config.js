@@ -4,12 +4,8 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   server: {
-    // Proxy /api til backend under lokal utvikling
     proxy: {
-      "/api": {
-        target: "http://localhost:4000",
-        changeOrigin: true,
-      },
+      "/api": "http://localhost:4000",
     },
   },
 });

@@ -20,17 +20,15 @@ services:
     restart: unless-stopped
     environment:
       - API_KEY=${API_KEY:-njord-secret-change-me}
-      - DATA_DIR=/app/data
       - PORT=4000
+      - DATA_DIR=/app/data
     volumes:
       - spinning-data:/app/data
     networks:
       - spinning-net
 
-networks:
-  spinning-net:
-    driver: bridge
-
 volumes:
   spinning-data:
-    driver: local
+
+networks:
+  spinning-net:

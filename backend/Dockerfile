@@ -1,6 +1,5 @@
 FROM node:20-alpine
 
-# better-sqlite3 trenger build-tools
 RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
@@ -10,7 +9,6 @@ RUN npm install --omit=dev
 
 COPY server.js ./
 
-# Data-volum
 VOLUME ["/app/data"]
 
 EXPOSE 4000

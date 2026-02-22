@@ -1,8 +1,8 @@
 # ── Stage 1: Build React-app ────────────────────────────────
 FROM node:20-alpine AS builder
 
-ARG VITE_API_KEY=njord-secret-change-me
-ENV VITE_API_KEY=$VITE_API_KEY
+ARG VITE_API_KEY
+ENV VITE_API_KEY=${VITE_API_KEY}
 
 WORKDIR /app
 COPY package.json ./
