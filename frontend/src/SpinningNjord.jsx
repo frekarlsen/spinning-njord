@@ -43,8 +43,8 @@ function Confetti({active}){
   const[particles,setParticles]=useState([]);
   useEffect(()=>{
     if(!active)return;
-    const cols=["#FF6B35","#F7C948","#3B82F6","#10B981","#EF4444","#8B5CF6","#EC4899"];
-    const p=Array.from({length:35},(_,i)=>({id:i,x:50+(Math.random()-.5)*40,color:cols[Math.floor(Math.random()*cols.length)],delay:Math.random()*0.4,dx:(Math.random()-.5)*200,size:Math.random()*6+4,type:Math.random()>.5?"circle":"rect"}));
+    const emojis=["🚴","💪","🔥","⭐","🎉","💥","🏆","❤️","😎","🚀"];
+    const p=Array.from({length:25},(_,i)=>({id:i,x:50+(Math.random()-.5)*40,emoji:emojis[Math.floor(Math.random()*emojis.length)],delay:Math.random()*0.4,dx:(Math.random()-.5)*200,size:Math.random()*14+16}));
     setParticles(p);
     const t=setTimeout(()=>setParticles([]),2500);
     return()=>clearTimeout(t);
@@ -53,7 +53,7 @@ function Confetti({active}){
   return(
     <div style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:100,overflow:"hidden"}}>
       {particles.map(p=>(
-        <div key={p.id} style={{position:"absolute",left:p.x+"%",top:"40%",width:p.size,height:p.type==="circle"?p.size:p.size*1.5,background:p.color,borderRadius:p.type==="circle"?"50%":"2px",animation:"confetti-pop 1.8s ease-out forwards",animationDelay:p.delay+"s","--dx":p.dx+"px"}}/>
+        <div key={p.id} style={{position:"absolute",left:p.x+"%",top:"40%",fontSize:p.size,animation:"confetti-pop 1.8s ease-out forwards",animationDelay:p.delay+"s","--dx":p.dx+"px"}}>{p.emoji}</div>
       ))}
     </div>
   );
@@ -123,7 +123,7 @@ function SessionCard({session,userName,onSignup,onLeave,maxSpots,isAdmin,onEdit,
         {!past&&<div className="border-t border-gray-100">
           {isS?<div className={"py-3 text-center text-sm font-semibold "+T.signedUp}>✓ Du er påmeldt</div>
           :isW?<div className={"py-3 text-center text-sm font-semibold "+T.waitlisted}>Venteliste — plass {wPos}</div>
-          :<button onClick={()=>onSignup(session.id)} disabled={!lc} className={"w-full py-3.5 text-sm font-bold transition-all "+(!""+lc?"bg-gray-50 text-gray-300 cursor-not-allowed":full?T.accentWait+" text-white":T.accent+" text-white")}>{full?"Sett meg på venteliste":"Meld på"}</button>}
+          :<button onClick={()=>onSignup(session.id)} disabled={!lc} className={"w-full py-3.5 text-sm font-bold transition-all "+(!lc?"bg-gray-50 text-gray-300 cursor-not-allowed":full?T.accentWait+" text-white":"bg-green-500 hover:bg-green-600 text-white")}>{full?"Sett meg på venteliste":"Meld på"}</button>}
         </div>}
       </>}
     </div>
@@ -157,7 +157,7 @@ function LoginModal({admins,onLogin,onClose}){
   return(
     <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-gray-100">
-        <h3 className="text-lg font-bold text-gray-800 mb-4">🔐 Admin</h3>
+        <h3 className="text-lg font-bold text-gray-800 mb-4">🔐 Instruktør</h3>
         <div className="space-y-3"><Input placeholder="Brukernavn" value={u} onChange={e=>setU(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()}/><Input placeholder="Passord" type="password" value={p} onChange={e=>setP(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()}/>{err&&<p className="text-red-500 text-sm font-medium">Feil brukernavn eller passord</p>}</div>
         <div className="flex gap-2 mt-5"><Button variant="ghost" onClick={onClose}>Avbryt</Button><Button onClick={go}>Logg inn</Button></div>
       </div>
@@ -170,9 +170,9 @@ function AdminPanel({data,onSave,onLogout}){
   const flash=m=>{setSaved(m);setTimeout(()=>setSaved(""),2000)};
   return(
     <div>
-      <div className="flex items-center justify-between mb-4"><h2 className="text-lg font-bold text-gray-800">⚙️ Admin</h2><Button variant="ghost" size="sm" onClick={onLogout}>Logg ut</Button></div>
+      <div className="flex items-center justify-between mb-4"><h2 className="text-lg font-bold text-gray-800">⚙️ Instruktør</h2><Button variant="ghost" size="sm" onClick={onLogout}>Logg ut</Button></div>
       {saved&&<div className="mb-4 bg-green-50 text-green-600 text-sm font-medium px-4 py-2.5 rounded-xl border border-green-100">✓ {saved}</div>}
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-4">{[{id:"admins",l:"Admins"},{id:"settings",l:"Innstillinger"}].map(x=><button key={x.id} onClick={()=>setTab(x.id)} className={"flex-1 py-2 text-sm rounded-lg font-medium transition-colors "+(tab===x.id?"bg-white text-gray-800 shadow-sm":"text-gray-400 hover:text-gray-600")}>{x.l}</button>)}</div>
+      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-4">{[{id:"admins",l:"Instruktører"},{id:"settings",l:"Innstillinger"}].map(x=><button key={x.id} onClick={()=>setTab(x.id)} className={"flex-1 py-2 text-sm rounded-lg font-medium transition-colors "+(tab===x.id?"bg-white text-gray-800 shadow-sm":"text-gray-400 hover:text-gray-600")}>{x.l}</button>)}</div>
       {tab==="admins"&&<div className="space-y-3">
         {data.admins.map((a,i)=><div key={i} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 border border-gray-100"><span className="text-gray-700 font-medium">{a.username}</span><button onClick={()=>{if(data.admins.length<=1)return;const arr=[...data.admins];arr.splice(i,1);onSave({...data,admins:arr});flash("Fjernet")}} disabled={data.admins.length<=1} className={data.admins.length<=1?"text-gray-300":"text-gray-400 hover:text-red-500"}>✕</button></div>)}
         <div className="space-y-2 pt-3 border-t border-gray-100"><Input placeholder="Brukernavn" value={na.username} onChange={e=>setNa(p=>({...p,username:e.target.value}))}/><Input placeholder="Passord" type="password" value={na.password} onChange={e=>setNa(p=>({...p,password:e.target.value}))}/><Button onClick={()=>{if(!na.username||!na.password)return;if(data.admins.some(a=>a.username.toLowerCase()===na.username.toLowerCase()))return;onSave({...data,admins:[...data.admins,{...na}]});setNa({username:"",password:""});flash("Lagt til")}} disabled={!na.username||!na.password}>Legg til</Button></div>
@@ -245,10 +245,10 @@ export default function SpinningNjord(){
           {isAdmin&&<button onClick={()=>setShowNew(true)} className={"w-full mb-5 py-3.5 border-2 border-dashed rounded-2xl transition-all text-sm font-bold "+T.addBtn}>+ Legg til økt</button>}
 
           <div className="space-y-4">
-            {active.length===0&&cancelled.length===0?<div className="text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-sm"><div className="text-5xl mb-3">🚴</div><p className="text-gray-400 font-medium">Ingen økter denne uka</p>{isAdmin?<p className="text-gray-300 text-sm mt-1">Trykk «+ Legg til økt»</p>:<p className="text-gray-300 text-sm mt-1">Økter legges ut av admin</p>}</div>
+            {active.length===0&&cancelled.length===0?<div className="text-center py-16 bg-white rounded-2xl border border-gray-100 shadow-sm"><div className="text-5xl mb-3">🚴</div><p className="text-gray-400 font-medium">Ingen økter denne uka</p>{isAdmin?<p className="text-gray-300 text-sm mt-1">Trykk «+ Legg til økt»</p>:<p className="text-gray-300 text-sm mt-1">Økter legges ut av instruktør</p>}</div>
             :<>{active.map(s=><SessionCard key={s.id} session={s} userName={userName} onSignup={doSignup} onLeave={doLeave} maxSpots={spots} isAdmin={isAdmin} onEdit={setEditSession} onCancel={doCancel} onRestore={doRestore} onDelete={del}/>)}{cancelled.map(s=><SessionCard key={s.id} session={s} userName={userName} onSignup={doSignup} onLeave={doLeave} maxSpots={spots} isAdmin={isAdmin} onEdit={setEditSession} onCancel={doCancel} onRestore={doRestore} onDelete={del}/>)}</>}
           </div>
-          <div className="text-center text-xs mt-8" style={{color:"#D4A373"}}>Laget av Fredrik Karlsen</div>
+          <div className="text-center text-xs mt-8 space-y-1" style={{color:"#D4A373"}}><p>Vel møtt!</p><p>Laget av Fredrik Karlsen</p></div>
         </div>
         {showLogin&&<LoginModal admins={data.admins} onLogin={u=>{setAdminUser(u);setShowLogin(false);setShowAdmin(true)}} onClose={()=>setShowLogin(false)}/>}
         {(editSession||showNew)&&<SessionModal session={editSession||{}} monday={monday} onSave={doSave} onClose={()=>{setEditSession(null);setShowNew(false)}}/>}
