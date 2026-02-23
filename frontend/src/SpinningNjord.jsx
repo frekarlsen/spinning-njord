@@ -29,7 +29,7 @@ function useStorage(){
 
 async function notifyTeams(url,msg){if(!url)return;try{await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({"@type":"MessageCard",summary:"Spinning",themeColor:"0078D4",title:"🚴 Spinning Njord A",text:msg})})}catch{}}
 
-async function notifyNtfy(topic,title,msg,tags){if(!topic)return;try{await fetch("https://ntfy.sh/"+topic,{method:"POST",headers:{"Title":title,"Tags":tags||"bike"},body:msg})}catch{}}
+async function notifyNtfy(topic,title,msg,tags){console.log("ntfy debug:",{topic,title,msg});if(!topic)return;try{const r=await fetch("https://ntfy.sh/"+topic,{method:"POST",headers:{"Title":title,"Tags":tags||"bike"},body:msg});console.log("ntfy response:",r.status)}catch(e){console.error("ntfy feil:",e)}}
 
 async function sendNotifications(data,title,msg,tags){
   notifyTeams(data.teamsWebhook,msg);
