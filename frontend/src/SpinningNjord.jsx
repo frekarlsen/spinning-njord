@@ -197,7 +197,7 @@ export default function SpinningNjord(){
   const monday=useMemo(()=>getMondayOfWeek(weekOffset),[weekOffset]);const weekNum=getWeekNumber(monday);
   const isAdmin=!!adminUser;
 
-  const weekSessions=useMemo(()=>{if(!data)return[];return data.sessions.filter(s=>isSameWeek(s.date,monday)).sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time))},[data,monday]);
+  const weekSessions=useMemo(()=>{if(!data)return[];return data.sessions.filter(s=>isSameWeek(s.date,monday)).sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time))},[data,monday]);
 
   if(!data)return<div className="min-h-screen bg-gray-50 flex items-center justify-center"><div className="text-gray-400 font-medium">Laster...</div></div>;
 
