@@ -151,7 +151,19 @@ function SessionModal({session,monday,onSave,onClose}){
   );
 }
 
-
+function LoginModal({onLogin,onClose}){
+  const[u,setU]=useState("");const[err,setErr]=useState(false);
+  const go=()=>{if(u.trim().toLowerCase()==="instruktør"){onLogin()}else{setErr(true);setTimeout(()=>setErr(false),2000)}};
+  return(
+    <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-gray-100">
+        <h3 className="text-lg font-bold text-gray-800 mb-4">🔐 Instruktør</h3>
+        <div className="space-y-3"><Input placeholder="Skriv inn navn" value={u} onChange={e=>setU(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()}/>{err&&<p className="text-red-500 text-sm font-medium">Feil navn</p>}</div>
+        <div className="flex gap-2 mt-5"><Button variant="ghost" onClick={onClose}>Avbryt</Button><Button onClick={go}>Logg inn</Button></div>
+      </div>
+    </div>
+  );
+}
 
 function AdminPanel({data,onSave,onLogout}){
   const[wh,setWh]=useState(data.teamsWebhook||"");const[nt,setNt]=useState(data.ntfyTopic||"");const[ms,setMs]=useState(data.maxSpots||MAX_SPOTS);const[saved,setSaved]=useState("");
@@ -172,12 +184,13 @@ function AdminPanel({data,onSave,onLogout}){
 
 export default function SpinningNjord(){
   const[data,save]=useStorage();const[weekOffset,setWeekOffset]=useState(0);const[userName,setUserName]=useState(()=>localStorage.getItem("spinningName")||"");
-  const[isAdmin,setIsAdmin]=useState(false);const[showAdmin,setShowAdmin]=useState(false);
+  const[adminUser,setAdminUser]=useState(null);const[showLogin,setShowLogin]=useState(false);const[showAdmin,setShowAdmin]=useState(false);
   const[editSession,setEditSession]=useState(null);const[showNew,setShowNew]=useState(false);
   const[quote]=useState(()=>NJORD_QUOTES[Math.floor(Math.random()*NJORD_QUOTES.length)]);
   const[confettiKey,setConfettiKey]=useState(0);
 
   const monday=useMemo(()=>getMondayOfWeek(weekOffset),[weekOffset]);const weekNum=getWeekNumber(monday);
+  const isAdmin=!!adminUser;
 
   const weekSessions=useMemo(()=>{if(!data)return[];return data.sessions.filter(s=>isSameWeek(s.date,monday)).sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time))},[data,monday]);
 
@@ -208,10 +221,10 @@ export default function SpinningNjord(){
 
           <div className="flex gap-2 mb-5 mt-4">
             <input type="text" placeholder="Skriv inn navnet ditt" value={userName} onChange={e=>{setUserName(e.target.value);localStorage.setItem("spinningName",e.target.value)}} className={"flex-1 rounded-xl px-4 py-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all text-sm font-medium shadow-sm bg-white border-2 "+T.input}/>
-            <button onClick={()=>{if(isAdmin){setIsAdmin(false);setShowAdmin(false)}else{setIsAdmin(true);setShowAdmin(true)}}} className={"px-3 rounded-xl border-2 transition-all text-sm font-medium shadow-sm "+(isAdmin?"border-orange-400 text-orange-500 bg-orange-50 hover:bg-orange-100":"border-gray-200 text-gray-400 bg-white hover:text-gray-600 hover:border-gray-300")}>{isAdmin?"⚙️":"🔒"}</button>
+            <button onClick={()=>isAdmin?setShowAdmin(!showAdmin):setShowLogin(true)} className={"px-3 rounded-xl border-2 transition-all text-sm font-medium shadow-sm "+(isAdmin?"border-orange-400 text-orange-500 bg-orange-50 hover:bg-orange-100":"border-gray-200 text-gray-400 bg-white hover:text-gray-600 hover:border-gray-300")}>{isAdmin?"⚙️":"🔒"}</button>
           </div>
 
-          {isAdmin&&showAdmin&&<div className={"mb-5 bg-white rounded-2xl p-5 shadow-sm border-2 "+T.adminB}><AdminPanel data={data} onSave={save} onLogout={()=>{setIsAdmin(false);setShowAdmin(false)}}/></div>}
+          {isAdmin&&showAdmin&&<div className={"mb-5 bg-white rounded-2xl p-5 shadow-sm border-2 "+T.adminB}><AdminPanel data={data} onSave={save} onLogout={()=>{setAdminUser(null);setShowAdmin(false)}}/></div>}
 
           <div className="text-center">
             <button onClick={()=>setWeekOffset(0)} className="hover:opacity-70 transition-opacity">
@@ -233,6 +246,7 @@ export default function SpinningNjord(){
           </div>
           <div className="text-center text-xs mt-8 space-y-1" style={{color:"#D4A373"}}><p>Vel møtt!</p><p>Laget av Fredrik Karlsen</p></div>
         </div>
+        {showLogin&&<LoginModal onLogin={()=>{setAdminUser("Instruktør");setShowLogin(false);setShowAdmin(true)}} onClose={()=>setShowLogin(false)}/>}
         {(editSession||showNew)&&<SessionModal session={editSession||{}} monday={monday} onSave={doSave} onClose={()=>{setEditSession(null);setShowNew(false)}}/>}
       </div>
     </>
