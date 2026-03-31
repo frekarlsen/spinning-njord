@@ -231,15 +231,16 @@ export default function SpinningNjord(){
 
           {isAdmin&&showAdmin&&<div className={"mb-5 bg-white rounded-2xl p-5 shadow-sm border-2 "+T.adminB}><AdminPanel data={data} onSave={save} onLogout={()=>{setAdminUser(null);setShowAdmin(false)}}/></div>}
 
-          <div className={"flex items-center justify-between mb-5 rounded-2xl p-3 shadow-sm border "+T.weekBg}>
-            <button onClick={()=>setWeekOffset(o=>o-1)} className="w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-xl text-gray-400 hover:text-gray-600">‹</button>
-            <div className="text-center">
-              <button onClick={()=>setWeekOffset(0)} className="hover:opacity-70 transition-opacity">
-                <div className="font-bold text-gray-800 text-lg">Uke {weekNum}</div>
-                <div className="text-xs text-gray-400 font-medium">{fmtShort(monday)} – {fmtShort(sun)} {monday.getFullYear()}</div>
+          <div className="text-center">
+            <button onClick={()=>setWeekOffset(0)} className="hover:opacity-70 transition-opacity">
+              <div className="font-bold text-gray-800 text-lg">Uke {weekNum}</div>
+              <div className="text-xs text-gray-400 font-medium">{fmtShort(monday)} – {fmtShort(sun)} {monday.getFullYear()}</div>
+            </button>
+            {weekOffset!==0&&(
+              <button onClick={()=>setWeekOffset(0)} className="mt-1 text-xs font-semibold text-orange-500 hover:text-orange-600 bg-orange-50 hover:bg-orange-100 px-3 py-0.5 rounded-full transition-all">
+                ↩ I dag
               </button>
-            </div>
-            <button onClick={()=>setWeekOffset(o=>o+1)} className="w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-xl text-gray-400 hover:text-gray-600">›</button>
+            )}
           </div>
 
           {isAdmin&&<button onClick={()=>setShowNew(true)} className={"w-full mb-5 py-3.5 border-2 border-dashed rounded-2xl transition-all text-sm font-bold "+T.addBtn}>+ Legg til økt</button>}
