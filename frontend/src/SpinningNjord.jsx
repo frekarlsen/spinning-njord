@@ -12,7 +12,7 @@ function getMondayOfWeek(wo=0){const n=new Date(),d=n.getDay(),m=new Date(n);m.s
 function fmtFull(d){const dt=new Date(d+"T12:00:00");return["Søndag","Mandag","Tirsdag","Onsdag","Torsdag","Fredag","Lørdag"][dt.getDay()]+" "+dt.getDate()+"."+(dt.getMonth()+1).toString().padStart(2,"0")}
 function isSameWeek(ds,mon){const d=new Date(ds+"T12:00:00"),sun=new Date(mon);sun.setDate(sun.getDate()+6);sun.setHours(23,59,59,999);return d>=mon&&d<=sun}
 function isPast(ds,time){const d=new Date(ds+"T12:00:00");const[h,m]=time.split(":").map(Number);d.setHours(h+1,m,0,0);return new Date()>d}
-function defaultState(){return{admins:[{username:"Instruktør",password:"Njord2026"}],sessions:[],teamsWebhook:"",ntfyTopic:"",maxSpots:MAX_SPOTS}}
+function defaultState(){return{sessions:[],teamsWebhook:"",ntfyTopic:"",maxSpots:MAX_SPOTS}}
 
 async function apiGet(){
   try{const r=await fetch(API_BASE+"/data",{headers:{"x-api-key":API_KEY}});if(!r.ok)return null;return await r.json()}catch{return null}
@@ -151,51 +151,33 @@ function SessionModal({session,monday,onSave,onClose}){
   );
 }
 
-function LoginModal({admins,onLogin,onClose}){
-  const[u,setU]=useState("");const[p,setP]=useState("");const[err,setErr]=useState(false);
-  const go=()=>{const m=admins.find(a=>a.username.toLowerCase()===u.toLowerCase()&&a.password===p);if(m)onLogin(m.username);else{setErr(true);setTimeout(()=>setErr(false),2000)}};
-  return(
-    <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-gray-100">
-        <h3 className="text-lg font-bold text-gray-800 mb-4">🔐 Instruktør</h3>
-        <div className="space-y-3"><Input placeholder="Instruktør" value={u} onChange={e=>setU(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()}/><Input placeholder="Njord2026" type="password" value={p} onChange={e=>setP(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()}/>{err&&<p className="text-red-500 text-sm font-medium">Feil brukernavn eller passord</p>}</div>
-        <div className="flex gap-2 mt-5"><Button variant="ghost" onClick={onClose}>Avbryt</Button><Button onClick={go}>Logg inn</Button></div>
-      </div>
-    </div>
-  );
-}
+
 
 function AdminPanel({data,onSave,onLogout}){
-  const[tab,setTab]=useState("admins");const[na,setNa]=useState({username:"",password:""});const[wh,setWh]=useState(data.teamsWebhook||"");const[nt,setNt]=useState(data.ntfyTopic||"");const[ms,setMs]=useState(data.maxSpots||MAX_SPOTS);const[saved,setSaved]=useState("");
+  const[wh,setWh]=useState(data.teamsWebhook||"");const[nt,setNt]=useState(data.ntfyTopic||"");const[ms,setMs]=useState(data.maxSpots||MAX_SPOTS);const[saved,setSaved]=useState("");
   const flash=m=>{setSaved(m);setTimeout(()=>setSaved(""),2000)};
   return(
     <div>
       <div className="flex items-center justify-between mb-4"><h2 className="text-lg font-bold text-gray-800">⚙️ Instruktør</h2><Button variant="ghost" size="sm" onClick={onLogout}>Logg ut</Button></div>
       {saved&&<div className="mb-4 bg-green-50 text-green-600 text-sm font-medium px-4 py-2.5 rounded-xl border border-green-100">✓ {saved}</div>}
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-4">{[{id:"admins",l:"Instruktører"},{id:"settings",l:"Innstillinger"}].map(x=><button key={x.id} onClick={()=>setTab(x.id)} className={"flex-1 py-2 text-sm rounded-lg font-medium transition-colors "+(tab===x.id?"bg-white text-gray-800 shadow-sm":"text-gray-400 hover:text-gray-600")}>{x.l}</button>)}</div>
-      {tab==="admins"&&<div className="space-y-3">
-        {data.admins.map((a,i)=><div key={i} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 border border-gray-100"><span className="text-gray-700 font-medium">{a.username}</span><button onClick={()=>{if(data.admins.length<=1)return;const arr=[...data.admins];arr.splice(i,1);onSave({...data,admins:arr});flash("Fjernet")}} disabled={data.admins.length<=1} className={data.admins.length<=1?"text-gray-300":"text-gray-400 hover:text-red-500"}>✕</button></div>)}
-        <div className="space-y-2 pt-3 border-t border-gray-100"><Input placeholder="Brukernavn" value={na.username} onChange={e=>setNa(p=>({...p,username:e.target.value}))}/><Input placeholder="Passord" type="password" value={na.password} onChange={e=>setNa(p=>({...p,password:e.target.value}))}/><Button onClick={()=>{if(!na.username||!na.password)return;if(data.admins.some(a=>a.username.toLowerCase()===na.username.toLowerCase()))return;onSave({...data,admins:[...data.admins,{...na}]});setNa({username:"",password:""});flash("Lagt til")}} disabled={!na.username||!na.password}>Legg til</Button></div>
-      </div>}
-      {tab==="settings"&&<div className="space-y-4">
+      <div className="space-y-4">
         <Input label="Maks plasser per økt" type="number" value={ms} onChange={e=>setMs(e.target.value)}/>
         <div><Input label="Teams Webhook URL" type="url" placeholder="https://outlook.office.com/webhook/..." value={wh} onChange={e=>setWh(e.target.value)}/><p className="text-xs text-gray-400 mt-1.5">Varsel til Teams ved endringer.</p></div>
         <div><Input label="ntfy.sh Topic" type="text" placeholder="spinning-njord-a" value={nt} onChange={e=>setNt(e.target.value)}/><p className="text-xs text-gray-400 mt-1.5">Push-varsler via <a href="https://ntfy.sh" target="_blank" rel="noopener" className="text-orange-500 underline">ntfy.sh</a>. Abonnér på topic i appen.</p></div>
         <Button onClick={()=>{onSave({...data,teamsWebhook:wh,ntfyTopic:nt,maxSpots:parseInt(ms)||MAX_SPOTS});flash("Lagret")}}>Lagre</Button>
-      </div>}
+      </div>
     </div>
   );
 }
 
 export default function SpinningNjord(){
   const[data,save]=useStorage();const[weekOffset,setWeekOffset]=useState(0);const[userName,setUserName]=useState(()=>localStorage.getItem("spinningName")||"");
-  const[adminUser,setAdminUser]=useState(null);const[showLogin,setShowLogin]=useState(false);const[showAdmin,setShowAdmin]=useState(false);
+  const[isAdmin,setIsAdmin]=useState(false);const[showAdmin,setShowAdmin]=useState(false);
   const[editSession,setEditSession]=useState(null);const[showNew,setShowNew]=useState(false);
   const[quote]=useState(()=>NJORD_QUOTES[Math.floor(Math.random()*NJORD_QUOTES.length)]);
   const[confettiKey,setConfettiKey]=useState(0);
 
   const monday=useMemo(()=>getMondayOfWeek(weekOffset),[weekOffset]);const weekNum=getWeekNumber(monday);
-  const isAdmin=!!adminUser;
 
   const weekSessions=useMemo(()=>{if(!data)return[];return data.sessions.filter(s=>isSameWeek(s.date,monday)).sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time))},[data,monday]);
 
@@ -226,10 +208,10 @@ export default function SpinningNjord(){
 
           <div className="flex gap-2 mb-5 mt-4">
             <input type="text" placeholder="Skriv inn navnet ditt" value={userName} onChange={e=>{setUserName(e.target.value);localStorage.setItem("spinningName",e.target.value)}} className={"flex-1 rounded-xl px-4 py-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all text-sm font-medium shadow-sm bg-white border-2 "+T.input}/>
-            <button onClick={()=>isAdmin?setShowAdmin(!showAdmin):setShowLogin(true)} className={"px-3 rounded-xl border-2 transition-all text-sm font-medium shadow-sm "+(isAdmin?"border-orange-400 text-orange-500 bg-orange-50 hover:bg-orange-100":"border-gray-200 text-gray-400 bg-white hover:text-gray-600 hover:border-gray-300")}>{isAdmin?"⚙️":"🔒"}</button>
+            <button onClick={()=>{if(isAdmin){setIsAdmin(false);setShowAdmin(false)}else{setIsAdmin(true);setShowAdmin(true)}}} className={"px-3 rounded-xl border-2 transition-all text-sm font-medium shadow-sm "+(isAdmin?"border-orange-400 text-orange-500 bg-orange-50 hover:bg-orange-100":"border-gray-200 text-gray-400 bg-white hover:text-gray-600 hover:border-gray-300")}>{isAdmin?"⚙️":"🔒"}</button>
           </div>
 
-          {isAdmin&&showAdmin&&<div className={"mb-5 bg-white rounded-2xl p-5 shadow-sm border-2 "+T.adminB}><AdminPanel data={data} onSave={save} onLogout={()=>{setAdminUser(null);setShowAdmin(false)}}/></div>}
+          {isAdmin&&showAdmin&&<div className={"mb-5 bg-white rounded-2xl p-5 shadow-sm border-2 "+T.adminB}><AdminPanel data={data} onSave={save} onLogout={()=>{setIsAdmin(false);setShowAdmin(false)}}/></div>}
 
           <div className="text-center">
             <button onClick={()=>setWeekOffset(0)} className="hover:opacity-70 transition-opacity">
@@ -251,7 +233,6 @@ export default function SpinningNjord(){
           </div>
           <div className="text-center text-xs mt-8 space-y-1" style={{color:"#D4A373"}}><p>Vel møtt!</p><p>Laget av Fredrik Karlsen</p></div>
         </div>
-        {showLogin&&<LoginModal admins={data.admins} onLogin={u=>{setAdminUser(u);setShowLogin(false);setShowAdmin(true)}} onClose={()=>setShowLogin(false)}/>}
         {(editSession||showNew)&&<SessionModal session={editSession||{}} monday={monday} onSave={doSave} onClose={()=>{setEditSession(null);setShowNew(false)}}/>}
       </div>
     </>
