@@ -12,7 +12,7 @@ function getMondayOfWeek(wo=0){const n=new Date(),d=n.getDay(),m=new Date(n);m.s
 function fmtFull(d){const dt=new Date(d+"T12:00:00");return["Søndag","Mandag","Tirsdag","Onsdag","Torsdag","Fredag","Lørdag"][dt.getDay()]+" "+dt.getDate()+"."+(dt.getMonth()+1).toString().padStart(2,"0")}
 function isSameWeek(ds,mon){const d=new Date(ds+"T12:00:00"),sun=new Date(mon);sun.setDate(sun.getDate()+6);sun.setHours(23,59,59,999);return d>=mon&&d<=sun}
 function isPast(ds,time){const d=new Date(ds+"T12:00:00");const[h,m]=time.split(":").map(Number);d.setHours(h+1,m,0,0);return new Date()>d}
-function defaultState(){return{sessions:[],teamsWebhook:"",ntfyTopic:"",maxSpots:MAX_SPOTS}}
+function defaultState(){return{admins:[{username:"Instruktør",password:"Njord2026"}],sessions:[],teamsWebhook:"",ntfyTopic:"",maxSpots:MAX_SPOTS}}
 
 async function apiGet(){
   try{const r=await fetch(API_BASE+"/data",{headers:{"x-api-key":API_KEY}});if(!r.ok)return null;return await r.json()}catch{return null}
@@ -158,7 +158,7 @@ function LoginModal({onLogin,onClose}){
     <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-gray-100">
         <h3 className="text-lg font-bold text-gray-800 mb-4">🔐 Instruktør</h3>
-        <div className="space-y-3"><Input placeholder="Skriv inn navn" value={u} onChange={e=>setU(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()}/>{err&&<p className="text-red-500 text-sm font-medium">Feil navn</p>}</div>
+        <div className="space-y-3"><Input placeholder="Instruktør" value={u} onChange={e=>setU(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()}/>{err&&<p className="text-red-500 text-sm font-medium">Feil navn</p>}</div>
         <div className="flex gap-2 mt-5"><Button variant="ghost" onClick={onClose}>Avbryt</Button><Button onClick={go}>Logg inn</Button></div>
       </div>
     </div>
@@ -166,18 +166,23 @@ function LoginModal({onLogin,onClose}){
 }
 
 function AdminPanel({data,onSave,onLogout}){
-  const[wh,setWh]=useState(data.teamsWebhook||"");const[nt,setNt]=useState(data.ntfyTopic||"");const[ms,setMs]=useState(data.maxSpots||MAX_SPOTS);const[saved,setSaved]=useState("");
+  const[tab,setTab]=useState("admins");const[na,setNa]=useState({username:"",password:""});const[wh,setWh]=useState(data.teamsWebhook||"");const[nt,setNt]=useState(data.ntfyTopic||"");const[ms,setMs]=useState(data.maxSpots||MAX_SPOTS);const[saved,setSaved]=useState("");
   const flash=m=>{setSaved(m);setTimeout(()=>setSaved(""),2000)};
   return(
     <div>
       <div className="flex items-center justify-between mb-4"><h2 className="text-lg font-bold text-gray-800">⚙️ Instruktør</h2><Button variant="ghost" size="sm" onClick={onLogout}>Logg ut</Button></div>
       {saved&&<div className="mb-4 bg-green-50 text-green-600 text-sm font-medium px-4 py-2.5 rounded-xl border border-green-100">✓ {saved}</div>}
-      <div className="space-y-4">
+      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-4">{[{id:"admins",l:"Instruktører"},{id:"settings",l:"Innstillinger"}].map(x=><button key={x.id} onClick={()=>setTab(x.id)} className={"flex-1 py-2 text-sm rounded-lg font-medium transition-colors "+(tab===x.id?"bg-white text-gray-800 shadow-sm":"text-gray-400 hover:text-gray-600")}>{x.l}</button>)}</div>
+      {tab==="admins"&&<div className="space-y-3">
+        {data.admins.map((a,i)=><div key={i} className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 border border-gray-100"><span className="text-gray-700 font-medium">{a.username}</span><button onClick={()=>{if(data.admins.length<=1)return;const arr=[...data.admins];arr.splice(i,1);onSave({...data,admins:arr});flash("Fjernet")}} disabled={data.admins.length<=1} className={data.admins.length<=1?"text-gray-300":"text-gray-400 hover:text-red-500"}>✕</button></div>)}
+        <div className="space-y-2 pt-3 border-t border-gray-100"><Input placeholder="Brukernavn" value={na.username} onChange={e=>setNa(p=>({...p,username:e.target.value}))}/><Input placeholder="Passord" type="password" value={na.password} onChange={e=>setNa(p=>({...p,password:e.target.value}))}/><Button onClick={()=>{if(!na.username||!na.password)return;if(data.admins.some(a=>a.username.toLowerCase()===na.username.toLowerCase()))return;onSave({...data,admins:[...data.admins,{...na}]});setNa({username:"",password:""});flash("Lagt til")}} disabled={!na.username||!na.password}>Legg til</Button></div>
+      </div>}
+      {tab==="settings"&&<div className="space-y-4">
         <Input label="Maks plasser per økt" type="number" value={ms} onChange={e=>setMs(e.target.value)}/>
         <div><Input label="Teams Webhook URL" type="url" placeholder="https://outlook.office.com/webhook/..." value={wh} onChange={e=>setWh(e.target.value)}/><p className="text-xs text-gray-400 mt-1.5">Varsel til Teams ved endringer.</p></div>
         <div><Input label="ntfy.sh Topic" type="text" placeholder="spinning-njord-a" value={nt} onChange={e=>setNt(e.target.value)}/><p className="text-xs text-gray-400 mt-1.5">Push-varsler via <a href="https://ntfy.sh" target="_blank" rel="noopener" className="text-orange-500 underline">ntfy.sh</a>. Abonnér på topic i appen.</p></div>
         <Button onClick={()=>{onSave({...data,teamsWebhook:wh,ntfyTopic:nt,maxSpots:parseInt(ms)||MAX_SPOTS});flash("Lagret")}}>Lagre</Button>
-      </div>
+      </div>}
     </div>
   );
 }
@@ -226,16 +231,16 @@ export default function SpinningNjord(){
 
           {isAdmin&&showAdmin&&<div className={"mb-5 bg-white rounded-2xl p-5 shadow-sm border-2 "+T.adminB}><AdminPanel data={data} onSave={save} onLogout={()=>{setAdminUser(null);setShowAdmin(false)}}/></div>}
 
-          <div className="text-center">
-            <button onClick={()=>setWeekOffset(0)} className="hover:opacity-70 transition-opacity">
-              <div className="font-bold text-gray-800 text-lg">Uke {weekNum}</div>
+          <div className={"flex items-center justify-between mb-5 rounded-2xl p-3 shadow-sm border "+T.weekBg}>
+            <button onClick={()=>setWeekOffset(o=>o-1)} className="w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-xl text-gray-400 hover:text-gray-600 transition-all">‹</button>
+            <div className="text-center">
+              <div className={"font-bold text-lg "+(isAdmin?"text-gray-800":"text-gray-800")}>Uke {weekNum}</div>
               <div className="text-xs text-gray-400 font-medium">{fmtShort(monday)} – {fmtShort(sun)} {monday.getFullYear()}</div>
-            </button>
-            {weekOffset!==0&&(
-              <button onClick={()=>setWeekOffset(0)} className="mt-1 text-xs font-semibold text-orange-500 hover:text-orange-600 bg-orange-50 hover:bg-orange-100 px-3 py-0.5 rounded-full transition-all">
-                ↩ I dag
-              </button>
-            )}
+              {weekOffset!==0&&(
+                <button onClick={()=>setWeekOffset(0)} className="mt-1 text-xs font-semibold text-orange-500 hover:text-orange-600 bg-orange-50 hover:bg-orange-100 px-3 py-0.5 rounded-full transition-all">↩ I dag</button>
+              )}
+            </div>
+            <button onClick={()=>setWeekOffset(o=>o+1)} className="w-10 h-10 rounded-xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-xl text-gray-400 hover:text-gray-600 transition-all">›</button>
           </div>
 
           {isAdmin&&<button onClick={()=>setShowNew(true)} className={"w-full mb-5 py-3.5 border-2 border-dashed rounded-2xl transition-all text-sm font-bold "+T.addBtn}>+ Legg til økt</button>}
