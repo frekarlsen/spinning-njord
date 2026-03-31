@@ -219,7 +219,7 @@ export default function SpinningNjord(){
     <>
       <Confetti active={confettiKey}/>
       <style>{"@keyframes whl{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}@keyframes cld{0%{transform:translateX(500px)}100%{transform:translateX(-160px)}}@keyframes rdl{0%{transform:translateX(500px)}100%{transform:translateX(-40px)}}@keyframes nb1{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-4px) rotate(1deg)}}@keyframes nb2{0%,100%{transform:translateY(-2px) rotate(1deg)}50%{transform:translateY(2px) rotate(-1deg)}}@keyframes nb3{0%,100%{transform:translateY(1px)}50%{transform:translateY(-3px) rotate(-1deg)}}.nb1{animation:nb1 .6s ease-in-out infinite}.nb2{animation:nb2 .55s ease-in-out infinite}.nb3{animation:nb3 .65s ease-in-out infinite}@keyframes confetti-pop{0%{opacity:1;transform:translateY(0) translateX(0) scale(1)}100%{opacity:0;transform:translateY(-300px) translateX(var(--dx)) scale(0.3) rotate(720deg)}}"}</style>
-      <div className="min-h-screen" style={{background:T.bg}}>
+      <div className="min-h-screen" style={{background:isAdmin?"linear-gradient(180deg,#1E1B2E 0%,#2D2640 50%,#1E1B2E 100%)":T.bg}}>
         <div className="max-w-lg mx-auto p-4 pb-24">
           <NjordHeader/>
           <div className="text-center mb-2"><h1 className="text-3xl font-black text-gray-800" style={{fontFamily:"Georgia,serif"}}>Spinning Njord A</h1><p className="text-orange-400 text-xs mt-2 italic">«{quote}»</p></div>
