@@ -12,7 +12,7 @@ function getMondayOfWeek(wo=0){const n=new Date(),d=n.getDay(),m=new Date(n);m.s
 function fmtFull(d){const dt=new Date(d+"T12:00:00");return["Søndag","Mandag","Tirsdag","Onsdag","Torsdag","Fredag","Lørdag"][dt.getDay()]+" "+dt.getDate()+"."+(dt.getMonth()+1).toString().padStart(2,"0")}
 function isSameWeek(ds,mon){const d=new Date(ds+"T12:00:00"),sun=new Date(mon);sun.setDate(sun.getDate()+6);sun.setHours(23,59,59,999);return d>=mon&&d<=sun}
 function isPast(ds,time){const d=new Date(ds+"T12:00:00");const[h,m]=time.split(":").map(Number);d.setHours(h+1,m,0,0);return new Date()>d}
-function defaultState(){return{admins:[{username:"instruktør",password:"njord2026"}],sessions:[],teamsWebhook:"",ntfyTopic:"",maxSpots:MAX_SPOTS}}
+function defaultState(){return{admins:[{username:"Instruktør",password:"Njord2026"}],sessions:[],teamsWebhook:"",ntfyTopic:"",maxSpots:MAX_SPOTS}}
 
 async function apiGet(){
   try{const r=await fetch(API_BASE+"/data",{headers:{"x-api-key":API_KEY}});if(!r.ok)return null;return await r.json()}catch{return null}
@@ -144,7 +144,7 @@ function SessionModal({session,monday,onSave,onClose}){
           {wd.map((w,i)=>{const ds=toLocalDateStr(w),sel=date===ds,dp=w<new Date(new Date().setHours(0,0,0,0));
             return<button key={i} onClick={()=>!dp&&setDate(ds)} disabled={dp} className={"py-2 rounded-xl text-center transition-all "+(dp?"text-gray-300 cursor-not-allowed":sel?T.btnP+" shadow-md scale-105":"bg-gray-100 text-gray-600 hover:bg-gray-200")}><div className="text-xs font-medium">{dn[i]}</div><div className="text-sm font-bold">{w.getDate()}</div></button>})}
         </div>
-        <div className="space-y-3"><Input label="Klokkeslett" type="time" value={time} onChange={e=>setTime(e.target.value)}/><Input label="Beskrivelse" type="text" value={label} onChange={e=>setLabel(e.target.value)} placeholder="Spinning, Intervall..."/></div>
+        <div className="space-y-3"><div><label className="block text-sm font-medium text-gray-500 mb-1.5">Klokkeslett</label><div className="flex items-center gap-2"><select value={time.split(":")[0]} onChange={e=>setTime(e.target.value+":"+time.split(":")[1])} className={"flex-1 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:ring-2 transition-all text-sm bg-white border-2 "+T.input}>{Array.from({length:24},(_,i)=><option key={i} value={String(i).padStart(2,"0")}>{String(i).padStart(2,"0")}</option>)}</select><span className="text-gray-400 font-bold text-lg">:</span><select value={time.split(":")[1]} onChange={e=>setTime(time.split(":")[0]+":"+e.target.value)} className={"flex-1 rounded-xl px-4 py-2.5 text-gray-800 focus:outline-none focus:ring-2 transition-all text-sm bg-white border-2 "+T.input}>{["00","05","10","15","20","25","30","35","40","45","50","55"].map(m=><option key={m} value={m}>{m}</option>)}</select></div></div><Input label="Beskrivelse" type="text" value={label} onChange={e=>setLabel(e.target.value)} placeholder="Spinning, Intervall..."/></div>
         <div className="flex gap-2 mt-5"><Button variant="ghost" onClick={onClose}>Avbryt</Button><Button onClick={()=>onSave({...session,date,time,label})} disabled={!date||!time}>{isE?"Lagre":"Opprett"}</Button></div>
       </div>
     </div>
@@ -158,7 +158,7 @@ function LoginModal({admins,onLogin,onClose}){
     <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-gray-100">
         <h3 className="text-lg font-bold text-gray-800 mb-4">🔐 Instruktør</h3>
-        <div className="space-y-3"><Input placeholder="Brukernavn" value={u} onChange={e=>setU(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()}/><Input placeholder="Passord" type="password" value={p} onChange={e=>setP(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()}/>{err&&<p className="text-red-500 text-sm font-medium">Feil brukernavn eller passord</p>}</div>
+        <div className="space-y-3"><Input placeholder="Instruktør" value={u} onChange={e=>setU(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()}/><Input placeholder="Njord2026" type="password" value={p} onChange={e=>setP(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()}/>{err&&<p className="text-red-500 text-sm font-medium">Feil brukernavn eller passord</p>}</div>
         <div className="flex gap-2 mt-5"><Button variant="ghost" onClick={onClose}>Avbryt</Button><Button onClick={go}>Logg inn</Button></div>
       </div>
     </div>
@@ -188,7 +188,7 @@ function AdminPanel({data,onSave,onLogout}){
 }
 
 export default function SpinningNjord(){
-  const[data,save]=useStorage();const[weekOffset,setWeekOffset]=useState(0);const[userName,setUserName]=useState("");
+  const[data,save]=useStorage();const[weekOffset,setWeekOffset]=useState(0);const[userName,setUserName]=useState(()=>localStorage.getItem("spinningName")||"");
   const[adminUser,setAdminUser]=useState(null);const[showLogin,setShowLogin]=useState(false);const[showAdmin,setShowAdmin]=useState(false);
   const[editSession,setEditSession]=useState(null);const[showNew,setShowNew]=useState(false);
   const[quote]=useState(()=>NJORD_QUOTES[Math.floor(Math.random()*NJORD_QUOTES.length)]);
@@ -222,10 +222,10 @@ export default function SpinningNjord(){
       <div className="min-h-screen" style={{background:isAdmin?"linear-gradient(180deg,#1E1B2E 0%,#2D2640 50%,#1E1B2E 100%)":T.bg}}>
         <div className="max-w-lg mx-auto p-4 pb-24">
           <NjordHeader/>
-          <div className="text-center mb-2"><h1 className="text-3xl font-black text-gray-800" style={{fontFamily:"Georgia,serif"}}>Spinning Njord A</h1><p className="text-orange-400 text-xs mt-2 italic">«{quote}»</p></div>
+          <div className="text-center mb-2"><h1 className={"text-3xl font-black "+(isAdmin?"text-white":"text-gray-800")} style={{fontFamily:"Georgia,serif"}}>Spinning Njord A</h1><p className={"text-xs mt-2 italic "+(isAdmin?"text-orange-300":"text-orange-400")}>«{quote}»</p></div>
 
           <div className="flex gap-2 mb-5 mt-4">
-            <input type="text" placeholder="Skriv inn navnet ditt" value={userName} onChange={e=>setUserName(e.target.value)} className={"flex-1 rounded-xl px-4 py-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all text-sm font-medium shadow-sm bg-white border-2 "+T.input}/>
+            <input type="text" placeholder="Skriv inn navnet ditt" value={userName} onChange={e=>{setUserName(e.target.value);localStorage.setItem("spinningName",e.target.value)}} className={"flex-1 rounded-xl px-4 py-2.5 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 transition-all text-sm font-medium shadow-sm bg-white border-2 "+T.input}/>
             <button onClick={()=>isAdmin?setShowAdmin(!showAdmin):setShowLogin(true)} className={"px-3 rounded-xl border-2 transition-all text-sm font-medium shadow-sm "+(isAdmin?"border-orange-400 text-orange-500 bg-orange-50 hover:bg-orange-100":"border-gray-200 text-gray-400 bg-white hover:text-gray-600 hover:border-gray-300")}>{isAdmin?"⚙️":"🔒"}</button>
           </div>
 
