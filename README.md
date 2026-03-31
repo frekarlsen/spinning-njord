@@ -55,7 +55,7 @@ Støtter to varslingskanaler (konfigureres i admin-panelet):
 
 ## Standard admin-innlogging
 
-- Brukernavn: `instruktør`
+- Brukernavn: `Instruktør`
 
 ---
 
