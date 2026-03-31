@@ -56,9 +56,6 @@ Støtter to varslingskanaler (konfigureres i admin-panelet):
 ## Standard admin-innlogging
 
 - Brukernavn: `instruktør`
-- Passord: `Njord2026`
-
-> Bytt passord via admin-panelet etter første innlogging.
 
 ---
 
